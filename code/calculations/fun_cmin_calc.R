@@ -1,4 +1,4 @@
-# last worked on 20200319 AP
+# last worked on 20200720AP
 # function to process on IRGA raw data
 # output is a file with co2 flux per hour for each microcosm
 
@@ -17,6 +17,8 @@ library(roxygen2)
 #' @return cmin_calc a dataframe that includes lab.id, unique.id, soil.volume, CO2CperHour
 #' @export .csv A detailed calculated dataframe with the title irga_calc_+"date"+.csv" 
 
+# cmin <- time.list[[13]]
+# date <- IRGA.files[13]
 
 cmin_calc_fun <- function(cmin, date){
   
@@ -43,7 +45,7 @@ cmin_calc_fun <- function(cmin, date){
   the.time <- numeric()
   the.slope <- numeric()
   
-  
+
   v.num <- 1
   for(j in 2:length(stds$cmin.id)){
     
@@ -88,8 +90,10 @@ cmin_calc_fun <- function(cmin, date){
   
   cmin %>%
     mutate(
-      incubationTime = as.numeric(strptime(paste(date.irga, time.irga, sep = " "), "%m/%d/%Y %H:%M") - 
-                                    strptime(paste(date.flush, time.flush, sep = " "), "%m/%d/%Y %H:%M")), # Hours
+      incubationTime = lubridate::time_length( lubridate::interval(
+        lubridate::mdy_hms(paste(cmin$date.flush, cmin$time.flush, sep = " ")),
+        lubridate::mdy_hms(paste(cmin$date.irga, cmin$time.irga, sep = " "))
+      ), unit = 'hour'), # Hours
       dilutionFactor = ((5*times.sampled)/(57.15-soil.volume))+1,    
       measuredCO2 = irga.integral*(standard.co2/correctedStandard),             # ppm
       concentrationCO2 = measuredCO2*dilutionFactor,                       # ppm
@@ -100,9 +104,9 @@ cmin_calc_fun <- function(cmin, date){
     ) %>% select(c(lab.id, unique.id, soil.volume, standard.co2, correctedStandard, the.time, the.slope,
                    irga.integral, incubationTime, CO2C, CO2CperHour)) -> cmin_calc 
   
-  setwd("calculated-data/")
-  write.csv(cmin_calc, paste("irga_calc_", date, ".csv")) 
-  setwd("../")
+  setwd("calculated-data/lab-experiment/experiment-1/mid_calcs/")
+  write.csv(cmin_calc, paste("irga_calc_", date, ".csv", sep = "")) 
+  setwd("../../../..")
   cmin_calc %>% select(c(lab.id, unique.id, soil.volume, CO2CperHour)) -> cmin_calc
   
   return(cmin_calc)

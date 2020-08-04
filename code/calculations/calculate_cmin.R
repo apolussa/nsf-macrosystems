@@ -18,7 +18,6 @@ library(DescTools)
 
 setwd("C:/Users/alexa/Dropbox (Yale_FES)/Macrosystems Biol Bradford Wieder Wood 2019-2024")
 
-
 # Function "cmin_calc_fun" calculates CO2 production hr-1
 
 source("code/calculations/fun_cmin_calc.R")
@@ -63,7 +62,6 @@ names(time.list) <- substr(IRGA.files, start = 12, stop = 27)
 # Calculate time-resolved carbon mineralization, saves files in "calulcated-data/lab-experiment/experiement-1/mid_calcs"
 
 time.list <- mapply(cmin_calc_fun, time.list, names(time.list), SIMPLIFY = F)
-
 
 
 ##### normalize flux by mass #####
@@ -123,7 +121,7 @@ cflux %>% group_by(day) %>%
     CO2CpergLitter = CO2CfromLitterCorrectedforSoil / actualLitFreshMass # ugCO2 gLitter-1 h-1
     
   ) %>% rename(microcosm.type = microcosm.type.x, lab.id = lab.id.x) %>%
-  select(unique.id, microcosm.id, replicate, day, date,  moist.trt, 
+  select(unique.id, lab.id, microcosm.id, replicate, day, date,  moist.trt, 
          CO2CpergLitter, standardCO2CperHourpergSoil) -> cmin_corrected_calc
 
 
