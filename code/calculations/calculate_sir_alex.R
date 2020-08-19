@@ -5,11 +5,11 @@ setwd("C:/Users/alexa/Dropbox (Yale_FES)/Macrosystems Biol Bradford Wieder Wood 
 # Function "sir_calc_fun" calculates CO2 production hr-1
 
 # import sir
-sir <- read_csv("raw-data/field-experiment/prelim/soilSIR_volume_SCBI_prelim-1_Fall-2019.csv")
+sir <- read_csv("raw-data/field-experiment/prelim/soilSIR_volume_HARV_prelim-3_Summer-2020.csv")
 
 # import gwc
 
-soil_gwc <- read_csv("calculated-data/field-experiment/prelim/soilGWC_prelim-1_Fall-2019.csv")
+soil_gwc <- read_csv("calculated-data/field-experiment/prelim/soilGWC_prelim-3_Summer-2020.csv")
 
 
 ##### calculate sir ##### 
@@ -25,7 +25,7 @@ calc_sir_fun <- function(sir){
   not_any_na <- function(x) all(!is.na(x))
   
   sir[is.na(sir$std.value.1)==FALSE,] -> stds
-  stds %>% add_column(meanStandard='NA') -> stds
+  stds %>% add_column(meanStandard=NA_real_) -> stds
   
   for(i in 1:nrow(stds)){
     bind_rows(
@@ -81,15 +81,15 @@ calc_sir_fun <- function(sir){
          correctedStandard = as.numeric(corr_std),
          the.time = the.time,
          the.slope = the.slope) %>% 
-    select(-c("std.value.1","std.value.2" , "std.value.3", "std.value.4",
+    dplyr::select(-c("std.value.1","std.value.2" , "std.value.3", "std.value.4",
               "std.start.time", "std.end.time")) -> sir
   
   # calculate co2 flux for all microcosms
   
   sir %>%
     mutate(
-      incubationTime = as.numeric(strptime(time.irga, "%H:%M") - 
-                                    strptime(time.flush, "%H:%M")), # Hours
+      incubationTime = as.numeric(difftime(as.POSIXct(time.irga,  format = "%m/%d/%Y %H:%M"),
+                                    as.POSIXct(time.flush,  format = "%m/%d/%Y %H:%M"), units = "hours")), # Hours
       dilutionFactor = ((5*times.sampled)/(57.15-soil.volume))+1,    
       measuredCO2 = irga.integral*(standard.co2/correctedStandard),             # ppm
       concentrationCO2 = measuredCO2*dilutionFactor,                       # ppm
@@ -97,12 +97,12 @@ calc_sir_fun <- function(sir){
       molesCO2 = (volumeCO2/22.414)*273.15/293.15,                         # umol
       CO2C = molesCO2*12.011,                                              # ug
       CO2CperHour = CO2C/incubationTime                                    # ug h-1
-    ) %>% select(c(irga.id, unique.id, soil.volume,actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
+    ) %>% dplyr::select(c(irga.id, unique.id, soil.volume,actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
                    irga.integral, incubationTime, CO2C, CO2CperHour)) -> sir_calc 
   
 # this is to check standard values etc 
   
-  sir_calc %>% select(c(irga.id, unique.id, actual.fresh.mass, CO2CperHour)) -> sir_calc
+  sir_calc %>% dplyr::select(c(irga.id, unique.id, the.time, actual.fresh.mass,incubationTime, CO2CperHour)) -> sir_calc
   
   return(sir_calc)
 }
@@ -115,8 +115,8 @@ sir_calc_normalized <- left_join(sir_calc, soil_gwc) %>%
   mutate(
     soilDryMass =  actual.fresh.mass*(1-moistureFraction),
     CO2CperHourpergSoil = CO2CperHour / soilDryMass # ug CO2C hr-1 g-1 dry soil
-  ) %>% select(c(unique.id, CO2CperHourpergSoil))
+  ) %>% dplyr::select(c(unique.id, CO2CperHourpergSoil))
 
 
 
-write.csv(sir_calc_normalized, "calculated-data/field-experiment/prelim/scbiSIR_prelim-1_Fall-2019.csv")
+write.csv(sir_calc_normalized, "calculated-data/field-experiment/prelim/harvSIR_prelim-3_Summer-2020.csv")
