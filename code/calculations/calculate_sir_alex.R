@@ -1,5 +1,6 @@
 # sir and normalize by dry weight soil
 
+# remember that the raw data needs "replicate" in it even if there was just one - august 19,2020
 
 setwd("C:/Users/alexa/Dropbox (Yale_FES)/Macrosystems Biol Bradford Wieder Wood 2019-2024")
 # Function "sir_calc_fun" calculates CO2 production hr-1
@@ -97,12 +98,12 @@ calc_sir_fun <- function(sir){
       molesCO2 = (volumeCO2/22.414)*273.15/293.15,                         # umol
       CO2C = molesCO2*12.011,                                              # ug
       CO2CperHour = CO2C/incubationTime                                    # ug h-1
-    ) %>% dplyr::select(c(irga.id, unique.id, soil.volume,actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
+    ) %>% dplyr::select(c(irga.id, unique.id, replicate, soil.volume,actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
                    irga.integral, incubationTime, CO2C, CO2CperHour)) -> sir_calc 
   
 # this is to check standard values etc 
   
-  sir_calc %>% dplyr::select(c(irga.id, unique.id, the.time, actual.fresh.mass,incubationTime, CO2CperHour)) -> sir_calc
+  sir_calc %>% dplyr::select(c(irga.id, unique.id,replicate, the.time, actual.fresh.mass,incubationTime, CO2CperHour)) -> sir_calc
   
   return(sir_calc)
 }
@@ -115,8 +116,11 @@ sir_calc_normalized <- left_join(sir_calc, soil_gwc) %>%
   mutate(
     soilDryMass =  actual.fresh.mass*(1-moistureFraction),
     CO2CperHourpergSoil = CO2CperHour / soilDryMass # ug CO2C hr-1 g-1 dry soil
-  ) %>% dplyr::select(c(unique.id, CO2CperHourpergSoil))
+  ) %>% dplyr::select(c(unique.id, replicate, CO2CperHourpergSoil))
 
 
 
-write.csv(sir_calc_normalized, "calculated-data/field-experiment/prelim/harvSIR_prelim-3_Summer-2020.csv")
+  aggregate(CO2CperHourpergSoil ~ unique.id, 
+            data = sir_calc_normalized,
+            FUN = mean) %>%
+  write.csv("calculated-data/field-experiment/prelim/harvSIR_prelim-3_Summer-2020.csv")
