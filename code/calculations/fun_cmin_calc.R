@@ -52,7 +52,7 @@ cmin_calc_fun <- function(cmin, date){
     for(i in 1:(stds$cmin.id[j] - stds$cmin.id[j-1])){
       # interpolate between two sets of standards
       
-      # previous (initial) standard + [(change between previous and current standard)/(change in time)]*(change in time between start of set to sample in set)
+      # previous (initial) standard + [(change between previous and current standard)/(change in time)]*(change in time between end of standard measurement to sample in set)
       
       corr_std[v.num] <- as.numeric(stds$meanStandard[j-1]) +  
         ((as.numeric(stds$meanStandard[j]) - as.numeric(stds$meanStandard[j-1])) / 
@@ -65,7 +65,13 @@ cmin_calc_fun <- function(cmin, date){
       
       
       the.time[v.num] <- as.numeric(difftime(as.POSIXct(cmin$time.irga[stds$cmin.id[j-1] + i - 1], format = "%H:%M"),
-                                             as.POSIXct(cmin$time.irga[stds$cmin.id[j-1]], format = "%H:%M"),
+                                             as.POSIXct(stds$std.end.time[j-1], format = "%H:%M"),
+                                             
+                                             # on October 24, 2020 this previous line was changed from 
+                                             # as.POSIXct(cmin$time.irga[stds$cmin.id[j-1]], format = "%H:%M"),
+                                             # to what it is currently - now reflecting the end of the standard measurement
+                                             # instead of the first sample measurement in the set! 
+                                             
                                              units = "min"))
       
       the.slope[v.num] <- ((as.numeric(stds$meanStandard[j]) - as.numeric(stds$meanStandard[j-1])) / 

@@ -33,3 +33,18 @@ aggregate(. ~ site + plot + unique.id + sampling.period,
   write.csv("soilWHC_prelim-2_Spring-2020.csv")
 
 
+# Calculate disaggregated water holding capacity and export
+
+soil_WHC %>%
+            mutate(
+              freshSoil = tin.fresh.soil - tin.mass,
+              ovenDriedSoil = tin.oven.dried.soil - tin.mass,
+              moistureMass = freshSoil - ovenDriedSoil, # Calculated in grams
+              moistureMasspergDrySoil = moistureMass / ovenDriedSoil, # g H2O g soil-1 at 100% WHC
+              moistureFraction = moistureMass / freshSoil, # No units, fraction
+              moisturePercent = moistureFraction * 100
+            ) %>%
+            select(-tin.mass:-ovenDriedSoil) %>%
+  write.csv("disaggregated_soilWHC_prelim-2_Spring-2020.csv")
+
+

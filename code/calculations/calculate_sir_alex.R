@@ -6,7 +6,7 @@ setwd("C:/Users/alexa/Dropbox (Yale_FES)/Macrosystems Biol Bradford Wieder Wood 
 # Function "sir_calc_fun" calculates CO2 production hr-1
 
 # import sir
-sir <- read_csv("raw-data/field-experiment/prelim/soilSIR_volume_HARV_prelim-3_Summer-2020.csv")
+sir <- read_csv("raw-data/field-experiment/prelim/soilSIR_volume_SCBI_prelim-3_Summer-2020.csv")
 
 # import gwc
 
@@ -65,7 +65,7 @@ calc_sir_fun <- function(sir){
       
       
       the.time[v.num] <- as.numeric(difftime(as.POSIXct(sir$time.irga[stds$irga.id[j-1] + i - 1], format = "%m/%d/%Y %H:%M"),
-                                             as.POSIXct(sir$time.irga[stds$irga.id[j-1]], format = "%m/%d/%Y %H:%M"),
+                                             as.POSIXct(stds$std.end.time[j-1], format = "%m/%d/%Y %H:%M"),
                                              units = "min"))
       
       the.slope[v.num] <- ((as.numeric(stds$meanStandard[j]) - as.numeric(stds$meanStandard[j-1])) / 
@@ -123,4 +123,4 @@ sir_calc_normalized <- left_join(sir_calc, soil_gwc) %>%
   aggregate(CO2CperHourpergSoil ~ unique.id, 
             data = sir_calc_normalized,
             FUN = mean) %>%
-  write.csv("calculated-data/field-experiment/prelim/harvSIR_prelim-3_Summer-2020.csv")
+  write.csv("calculated-data/field-experiment/prelim/scbiSIR_prelim-3_Summer-2020.csv")
