@@ -98,12 +98,12 @@ calc_sir_fun <- function(sir){
       molesCO2 = (volumeCO2/22.414)*273.15/293.15,                         # umol
       CO2C = molesCO2*12.011,                                              # ug
       CO2CperHour = CO2C/incubationTime                                    # ug h-1
-    ) %>% dplyr::select(c(irga.id, unique.id, replicate, volume, actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
+    ) %>% dplyr::select(c(irga.id, unique.id, replicate, tag, volume, actual.fresh.mass, standard.co2, correctedStandard, the.time, the.slope,
                    irga.integral, incubationTime, CO2C, CO2CperHour)) -> sir_calc 
   
 # this is to check standard values etc 
   
-  sir_calc %>% dplyr::select(c(irga.id, unique.id,replicate, the.time, actual.fresh.mass,incubationTime, CO2CperHour)) -> sir_calc
+  sir_calc %>% dplyr::select(c(irga.id, unique.id, tag, replicate, the.time, actual.fresh.mass,incubationTime, CO2CperHour)) -> sir_calc
   
   return(sir_calc)
 }
@@ -116,11 +116,11 @@ sir_calc_normalized <- left_join(sir_calc, gwc) %>%
   mutate(
     DryMass =  actual.fresh.mass*(1-moistureFraction),
     CO2CperHourperg = CO2CperHour / DryMass # ug CO2C hr-1 g-1 dry soil
-  ) %>% dplyr::select(c(unique.id, replicate, CO2CperHourperg))
+  ) %>% dplyr::select(c(unique.id, tag, replicate, CO2CperHourperg))
 
 
 
-  aggregate(CO2CperHourpergSoil ~ unique.id, 
+  aggregate(CO2CperHourperg ~ unique.id + tag, 
             data = sir_calc_normalized,
             FUN = mean) %>%
-  write.csv("calculated-data/field-experiment/prelim/scbiSIR_prelim-3_Summer-2020.csv")
+  write.csv("calculated-data/field-experiment/prelim/litterSIR_prelim-2_Spring-2020.csv")
